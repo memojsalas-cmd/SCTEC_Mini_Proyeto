@@ -255,3 +255,55 @@ def criar_colunas_derivadas ( df ):
 # dataset v2 (outliers tratados) + colunas derivadas
 df = criar_colunas_derivadas(df_v2)
 df[[ "data_venda" , "receita_total" , "mes" , "trimestre" , "faixa_receita_item" ]].head()
+
+##RF06 – cálculo de métricas Agregadas (groupby)
+
+#- Receita total e quantidade vendida por mês.
+#- Receita total por produto (top 5).
+#- Receita total por categoria.
+#- Receita total por região.
+
+def calcular_metricas ( df ):
+  #""" Calcula e retorna um dicionário com métricas agregadas por quatro dimensões:
+   #mês, produto, categoria e região. Usa .groupby() + .agg() com nomeação explícita de colunas:
+  #nova_coluna=("coluna_origem", "função") Isso permite criar múltiplas agregações em uma única chamada
+  #e nomear cada resultado diretamente, sem precisar renomear depois. """
+
+  metricas = {}
+  # --- Receita e volume por mês ---
+  # n_vendas conta quantas transações ocorreram em cada mês
+
+  metricas[ "por_mes" ] = ( df.groupby( "mes" ) .agg
+  (receita_total=( "receita_total" , "sum" ), # soma da receita no mês
+  quantidade=( "quantidade" , "sum" ), # total de itens vendidos
+  n_vendas=( "id_venda" , "count" ), # número de transações
+   ).reset_index().sort_values( "mes" ) )
+
+  # --- Top 5 produtos por receita total ---
+  # .head(5) após sort_values garante o ranking dos maiores
+
+  metricas[ "top_produtos" ] = ( df.groupby( "produto" )[ "receita_total" ]
+                                . sum () .sort_values(ascending= False ) .head( 5 )
+                                 .reset_index() )
+
+  # --- Receita por categoria ---
+
+  metricas[ "por_categoria" ] = ( df.groupby( "categoria" )[ "receita_total" ]
+                                 . sum () .reset_index().sort_values( "receita_total" , ascending= False ) )
+
+  # --- Receita e ticket médio por região ---
+  # media_ticket = receita média por transação individual em cada região;
+  # permite comparar regiões além do volume total (uma região pode ter
+  # menos vendas, mas vendas de maior valor)
+
+  metricas[ "por_regiao" ] = ( df.groupby( "regiao" ) .agg( receita_total=( "receita_total" , "sum" ),
+                              media_ticket=( "receita_total" , "mean" ), ).reset_index()
+                              .sort_values( "receita_total" , ascending= False ) )
+
+  # Exibição resumida para conferência no notebook
+  for nome, tabela in metricas.items():
+    print ( f"\n=== {nome.upper().replace( '_' , ' ' )} ===" )
+    print (tabela.to_string(index= False ))
+  return metricas
+
+metricas = calcular_metricas(df)
