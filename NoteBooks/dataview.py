@@ -404,3 +404,86 @@ def calcular_estatisticas_numpy ( df ):
       print (f" {k} : R$ {v :.2f}" )
   return stats
 stats = calcular_estatisticas_numpy(df)
+
+#RF09 – Visualizações com Matplotlib e Seaborn
+
+#1. Gráfico de linha : Receita total por mês ao longo do tempo
+#2. Gráfico de barras : Top 5 produtos ou categorias por receita
+#3. Gráfico Boxplot — Distribuição de Receita por Região
+#4. Gráfico de barras (verticais), Receita Total por Região
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+
+def gerar_visualizacoes ( df , metricas , output_dir = "outputs/graficos" ):
+  #""" Gera e exporta 3 gráficos informativos em PNG:
+  #1. Linha — receita total por mês (tendência ao longo do tempo)
+  #2. Barras — top 5 produtos por receita (ranking)
+  #3. Boxplot — distribuição de receita por região (dispersão e outliers)
+   #  sns.set_theme() aplica um estilo visual global a todos os gráficos
+    # gerados na sessão — só precisa ser chamado uma vez."""
+
+  os.makedirs(output_dir, exist_ok= True )
+  sns.set_theme(style= "whitegrid" , palette= "muted" )
+  meses_abrev = [ "Jan" , "Fev" , "Mar" , "Abr" , "Mai" , "Jun" , "Jul" , "Ago" , "Set" , "Out" , "Nov" , "Dez" ]
+
+  # Gráfico 1: Linha — Receita por Mês - Ideal para mostrar tendência e sazonalidade ao longo do tempo
+
+  fig, ax = plt.subplots(figsize=( 10 , 5 ))
+  pm = metricas[ "por_mes" ]
+  ax.plot(pm[ "mes" ], pm[ "receita_total" ], marker= "o" , linewidth= 2 )
+  ax.set_title( "Receita Total por Mês" )
+  ax.set_xlabel( "Mês" )
+  ax.set_ylabel( "Receita (R$)" )
+  ax.set_xticks( range ( 1 , 13 ))
+  ax.set_xticklabels(meses_abrev, rotation= 45 )
+  fig.tight_layout()
+  fig.savefig( f"{output_dir}/receita_por_mes.png" , dpi= 120 )
+  plt.show()
+  plt.close() # libera memória da figura anterior antes de criar a próxima
+
+  # Gráfico 2: Barras Horizontais — Top 5 Produtos
+  # Barras horizontais facilitam a leitura de rótulos longos (nomes de produtos).
+
+  fig, ax = plt.subplots(figsize=( 10 , 5 ))
+  sns.barplot(data=metricas[ "top_produtos" ], y= "produto" , x= "receita_total" , ax=ax)
+  ax.set_title( "Top 5 Produtos por Receita Total" )
+  ax.set_xlabel( "Receita Total (R$)" )
+  ax.set_ylabel( "Produto" )
+  fig.tight_layout()
+  fig.savefig( f"{output_dir}/top_produtos.png" , dpi= 120 )
+  plt.show()
+  plt.close()
+
+  # Gráfico 3: Boxplot — Distribuição de Receita por Região
+  # O boxplot mostra mediana, quartis e outliers de cada grupo,
+  # permitindo comparar não só o volume mas a variação interna # de cada região — informação que um gráfico de barras não entrega.
+
+  fig, ax = plt.subplots(figsize=( 10 , 5 ))
+  sns.boxplot(data=df, x= "regiao" , y= "receita_total" , ax=ax)
+  ax.set_title( "Distribuição de Receita por Região" )
+  ax.set_xlabel( "Região" )
+  ax.set_ylabel( "Receita por Venda (R$)" )
+  plt.xticks(rotation= 30 )
+  fig.tight_layout()
+  fig.savefig( f"{output_dir}/dist_regiao.png" , dpi= 120 )
+  plt.show()
+  plt.close()
+
+
+  # Gráfico 4: Barras verticais, Receita Total por Região
+
+  fig, ax = plt.subplots(figsize=(10, 5))
+  sns.barplot(data=metricas["por_regiao"], x="regiao", y="receita_total", ax=ax)
+  ax.set_title("Receita Total por Região")
+  ax.set_xlabel("Região")
+  ax.set_ylabel("Receita Total (R$)")
+  plt.xticks(rotation=45, ha='right')
+  fig.tight_layout()
+  fig.savefig(f"{output_dir}/receita_por_regiao.png", dpi=120)
+  plt.show()
+  plt.close()
+  print ( f"4 gráficos salvos em: {output_dir} " )
+
+gerar_visualizacoes(df, metricas)
