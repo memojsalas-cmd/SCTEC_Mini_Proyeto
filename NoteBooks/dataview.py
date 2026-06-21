@@ -355,3 +355,52 @@ media_gasto_por_segmento = media_gasto_por_segmento.sort_values(by='total_gasto'
 
 print("\n=== MÉDIA DE GASTO POR SEGMENTO ===")
 print(media_gasto_por_segmento.to_string(index=False))
+
+#RF08 – Cálculo de Estatísticas com NumPy
+
+#- Conversão de uma coluna do DataFrame para array NumPy
+#- Uso de operações vetorizadas (sem loops)
+#- Uso de broadcasting ou operações entre arrays
+#- funções NumPy ( mean , std , median , percentile , sum , etc.)
+
+def calcular_estatisticas_numpy ( df ):
+  #""" Usa NumPy diretamente sobre arrays para calcular estatísticas de receita. Demonstra três conceitos:
+   #1. Operações vetorizadas
+   #2. Broadcasting (operação escalar aplicada a todo o array de uma vez)
+   #3. Boolean indexing (filtrar array com máscara booleana) """
+   # .to_numpy() converte a Series do Pandas em um array NumPy puro.
+   # Isso é necessário para usar funções do NumPy diretamente e demonstrar
+   # que sabemos trabalhar com arrays além do DataFrame.
+  receitas = df[ "receita_total" ].to_numpy()
+
+# --- Estatísticas descritivas (operações vetorizadas) ---
+# Cada função abaixo opera sobre o array inteiro # "float()" garante que os valores sejam serializáveis em JSON (RF11)
+
+  stats = { "media" : float (np.mean(receitas)), "mediana" : float (np.median(receitas)),
+         "desvio_padrao" : float (np.std(receitas)), "total" : float (np. sum (receitas)),
+          "p25" : float (np.percentile(receitas, 25 )), "p75" : float (np.percentile(receitas, 75 )), }
+
+          # --- Broadcasting: participação percentual de cada venda ---
+          # receitas.sum() é um escalar; NumPy o aplica a cada elemento do array,
+          # calculando o % de cada venda no total.
+          # Isso é broadcasting: operação entre um array e um escalar.
+
+  receitas_pct = (receitas / receitas. sum ()) * 100
+  print(f" Participação das 5 maiores vendas no total: {np.sort(receitas_pct)[ -5 :]. round ( 2 )} %" )
+
+# --- Boolean indexing (filtro vetorizado) ---
+# (receitas > stats["media"]) gera um array de True/False para cada linha;
+# .sum() conta os True. Equivale a um for+if, mas muito mais eficiente.
+
+  acima_da_media = int ((receitas > stats[ "media" ]). sum ())
+  stats[ "acima_da_media" ] = acima_da_media
+
+# Exibição — formato separado para inteiro evitar "12.00"
+  print ( "\n=== ESTATÍSTICAS COM NUMPY ===" )
+  for k, v in stats.items():
+    if k == "acima_da_media" :
+       print (f" {k} : {v} vendas" )
+    else :
+      print (f" {k} : R$ {v :.2f}" )
+  return stats
+stats = calcular_estatisticas_numpy(df)
