@@ -208,3 +208,50 @@ print(f"Diferença = {len(df_v1) - len(df_v2)} linhas removidas")
 os.makedirs( "data/processed/v2_outliers_tratado" , exist_ok= True )
 df_v2.to_csv( "data/processed/v2_outliers_tratado/vendas_v2.csv" , index= False )
 print ( "\nv2 salva em data/processed/v2_outliers_tratado/" )
+
+
+##RF05 – Colunas Derivadas com Transformações
+
+#* receita_total: quantidade * preco_unitario
+#* mes: mês extraído da data (número ou nome)
+#* trimestre: trimestre do ano (Q1, Q2, Q3, Q4)
+#* ano: ano extraído da data
+#* faixa_receita_item: classifi cação da receita por item usando transformação condicional
+
+def criar_colunas_derivadas ( df ):
+  #""" Cria colunas calculadas a partir do dataset limpo:
+   #- receita_total : valor total da linha de venda (quantidade × preço)
+   #- mes / trimestre / ano : componentes extraídos da data
+   #- faixa_receita_item : classificação do valor de cada venda (np.select)
+   #Nota: receita_total foi calculada temporariamente no RF04 apenas para detecção de outliers e depois descartada.
+   #Aqui ela é criada de forma definitiva sobre df_v2 — já com os outliers tratados — para que todas as análises
+   #posteriores usem a mesma base consistente. """
+
+  df = df.copy()
+  # Receita por linha: grandeza central de todas as métricas do projeto
+  df[ "receita_total" ] = df[ "quantidade" ] * df[ "preco_unitario" ]
+  # Componentes de data — o atributo .dt expõe propriedades de datetime
+  df[ "mes" ] = df[ "data_venda" ].dt.month
+  df[ "trimestre" ] = df[ "data_venda" ].dt.quarter.apply( lambda q: f"Q{q}" )
+  df[ "ano" ] = df[ "data_venda" ].dt.year
+  #np.select: alternativa vetorizada ao if/elif/else para criar
+  # colunas categóricas. Recebe duas listas de mesmo tamanho:
+  # condicoes : lista de máscaras booleanas (testadas em ordem)
+  # valores : rótulo retornado quando a condição correspondente é True
+  # default : valor usado quando nenhuma condição é satisfeita # É equivalente a apply(lambda x: ...) mas muito mais eficiente em
+  # datasets grandes, pois opera sobre arrays sem usar loops Python.
+
+  condicoes = [ df[ "receita_total" ] < 500 , (df[ "receita_total" ] >= 500 ) & (df[ "receita_total" ] < 5000 ),
+               df[ "receita_total" ] >= 5000 , ]
+
+  rotulos = [ "Baixo Valor" , "Médio Valor" , "Alto Valor" ]
+  df[ "faixa_receita_item" ] = np.select(condicoes, rotulos, default= "N/D" )
+
+  print ( "COLUNAS DERIVADAS CRIADAS" )
+  print (df[[ "data_venda" , "receita_total" , "mes" , "trimestre" , "faixa_receita_item" ]].head())
+  return df
+
+# A partir daqui, `df` é o DataFrame principal de toda a análise:
+# dataset v2 (outliers tratados) + colunas derivadas
+df = criar_colunas_derivadas(df_v2)
+df[[ "data_venda" , "receita_total" , "mes" , "trimestre" , "faixa_receita_item" ]].head()
