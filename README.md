@@ -66,5 +66,3 @@ data/processed/ para consulta futura.
 - Bibliotecas: pandas, numpy, matplotlib, seaborn, re, datetime, os, random
 - GitHub para versionamento
 
-## Vídeo de demonstração 
-[Inserir link do Google Drive ou YouTube aqui] 
