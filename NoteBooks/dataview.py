@@ -1,3 +1,4 @@
+#%%
 # RF01 -Criação de um Data set de vendas com dados sintéticos 
 # Gerar o dataset no código
 
@@ -10,6 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns 
 from datetime import datetime, timedelta
 
+#%%
 # Gera um dataset sintético de vendas com dados propositalmente sujos, 
 # incluindo valores nulos, strings sujas, datas inválidas e outliers. 
 # 
@@ -51,6 +53,7 @@ df_bruto.to_csv( "data/raw/vendas.csv" , index= False )
 print (f"Dataset gerado com {len (df_bruto)} registros." )
 print (df_bruto.head())
 
+#%%
 ## RF02 Inspecionar e Descrever os Dados
 
 def inspecionar_dados(df_bruto):
@@ -69,6 +72,7 @@ def inspecionar_dados(df_bruto):
 
 inspecionar_dados(df_bruto)
 
+#%%
 # RF03 — Limpar e tratar os dados (regex + datas + nulos)
 
 # LIMPEZA COM EXPRESSÕES REGULARES (módulo re)
@@ -144,6 +148,7 @@ def limpar_dados(df):
 
     return df, relatorio
 
+#%%
 # EXECUÇÃO: limpar o dataset bruto e salvar como versão v1 (com outliers)
 # Nesta versão os outliers são MANTIDOS — eles serão tratados na RF04.
 
@@ -218,7 +223,7 @@ os.makedirs( "data/processed/v2_outliers_tratado" , exist_ok= True )
 df_v2.to_csv( "data/processed/v2_outliers_tratado/vendas_v2.csv" , index= False )
 print ( "\nv2 salva em data/processed/v2_outliers_tratado/" )
 
-
+#%%
 ##RF05 – Colunas Derivadas com Transformações
 
 #* receita_total: quantidade * preco_unitario
@@ -265,6 +270,7 @@ def criar_colunas_derivadas ( df ):
 df = criar_colunas_derivadas(df_v2)
 df[[ "data_venda" , "receita_total" , "mes" , "trimestre" , "faixa_receita_item" ]].head()
 
+#%%
 ##RF06 – cálculo de métricas Agregadas (groupby)
 
 #- Receita total e quantidade vendida por mês.
@@ -317,6 +323,7 @@ def calcular_metricas ( df ):
 
 metricas = calcular_metricas(df)
 
+#%%
 ##RF07 – Clientes segmentados por nível de Gastos.
 
  #Critério de segmentação.
@@ -417,6 +424,7 @@ def calcular_estatisticas_numpy ( df ):
   return stats
 stats = calcular_estatisticas_numpy(df)
 
+#%%
 #RF09 – Visualizações com Matplotlib e Seaborn
 
 #1. Gráfico de linha : Receita total por mês ao longo do tempo
@@ -502,6 +510,8 @@ def gerar_visualizacoes ( df , metricas , output_dir = "outputs/graficos" ):
 
 gerar_visualizacoes(df, metricas)
 
+
+#%%
 #RF10 – Organizar o Código em Funções Reutilizáveis
 
 # O notebook está organizado de acordo com essas diretrizes. Para cada etapa da análise, criei uma função dedicada, conforme solicitado:
@@ -532,6 +542,7 @@ _demo = aplicar_transformacao(df, "receita_total", lambda x: "Alto" if x > 2000 
 print(_demo[["receita_total","receita_total_transformado"]].head())
 
 
+#%%
 #RF11 – Ler e Escrever Arquivos (CSV e JSON)
 
 import json
@@ -552,6 +563,8 @@ def exportar_resultados ( metricas , clientes , stats ):
   clientes.to_csv( "outputs/segmentacao_clientes.csv" , index= False , encoding= "utf-8-sig" )
   print ( "CSV exportado: outputs/segmentacao_clientes.csv" )
   
+  
+#%%
  #RF12 – Consolidar a Análise e Salvar o Dataset Final
 
 #1. Todas as etapas do Notebook já foram executadas
